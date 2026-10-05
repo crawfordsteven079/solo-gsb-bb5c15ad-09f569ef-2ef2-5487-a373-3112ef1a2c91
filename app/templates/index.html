@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>♻️ {{ app_name }}</h1>
+  <nav>
+    <button class="tab active" data-tab="judge">来料判定</button>
+    <button class="tab" data-tab="query">判定单查询</button>
+    <button class="tab" data-tab="rules">规则版本</button>
+    <button class="tab" data-tab="audit">审计记录</button>
+  </nav>
+</header>
+
+<main>
+  <!-- 来料判定 -->
+  <section id="tab-judge" class="panel active">
+    <div class="card">
+      <h2>提交来料检验</h2>
+      <div class="form-grid">
+        <label>批次编号<input id="f-batch" placeholder="BATCH-20261005-001"></label>
+        <label>来源区域
+          <select id="f-region"></select>
+        </label>
+        <label>重量 (kg)<input id="f-weight" type="number" step="0.01" placeholder="1000"></label>
+        <label>指定规则版本（可空）<input id="f-rulever" placeholder="留空使用区域当前生效版本"></label>
+      </div>
+
+      <h3>检验明细</h3>
+      <table class="inner" id="items-table">
+        <thead><tr><th>物料类别</th><th>污染量(kg)</th><th>备注</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="secondary" id="btn-add-item">+ 添加一行</button>
+
+      <div class="actions">
+        <button id="btn-dryrun" class="secondary">试算（不落库）</button>
+        <button id="btn-submit" class="primary">出具判定单</button>
+      </div>
+      <div id="judge-errors" class="errors hidden"></div>
+    </div>
+
+    <div class="card hidden" id="result-card">
+      <h2>判定结果 <span id="r-no" class="badge"></span></h2>
+      <div id="r-summary"></div>
+      <h3>扣费明细</h3>
+      <table class="inner" id="r-deductions"></table>
+      <h3>证据说明</h3>
+      <ul id="r-evidence"></ul>
+      <div id="r-meta" class="muted"></div>
+    </div>
+  </section>
+
+  <!-- 查询 -->
+  <section id="tab-query" class="panel">
+    <div class="card">
+      <h2>判定单查询</h2>
+      <div class="form-grid">
+        <label>批次编号<input id="q-batch"></label>
+        <label>区域<input id="q-region" placeholder="EAST_CN"></label>
+        <label>等级
+          <select id="q-grade"><option value="">全部</option><option>A</option><option>B</option><option>C</option><option>D</option></select>
+        </label>
+      </div>
+      <div class="actions">
+        <button id="btn-query" class="primary">查询</button>
+        <a id="btn-export" class="button secondary" href="/api/decisions/export/csv">导出 CSV</a>
+      </div>
+      <table id="query-table">
+        <thead><tr><th>判定单号</th><th>批次</th><th>区域</th><th>重量</th><th>污染率</th><th>等级</th><th>结论</th><th>应付(元)</th><th>规则版本</th><th>时间</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 规则 -->
+  <section id="tab-rules" class="panel">
+    <div class="card">
+      <h2>区域当前生效规则</h2>
+      <table id="regions-table">
+        <thead><tr><th>区域</th><th>生效版本</th><th>规则ID</th></tr></thead><tbody></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>规则版本列表</h2>
+      <table id="rules-table">
+        <thead><tr><th>ID</th><th>版本</th><th>区域</th><th>状态</th><th>说明</th><th>创建时间</th><th>操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="muted">点击「激活」可切换区域规则；已出具的判定单固化了当时快照，切换不影响历史结论。</p>
+    </div>
+    <div class="card">
+      <h2>新建规则版本</h2>
+      <div class="form-grid">
+        <label>版本号<input id="n-version" placeholder="v2027.1"></label>
+        <label>区域<input id="n-region" placeholder="EAST_CN"></label>
+        <label>说明<input id="n-note"></label>
+      </div>
+      <label class="inline"><input type="checkbox" id="n-activate"> 创建后立即激活</label>
+      <p class="muted">规则内容 JSON（可先在列表中参考现有版本的 content 修改）：</p>
+      <textarea id="n-content" rows="10" class="code"></textarea>
+      <div class="actions"><button id="btn-create-rule" class="primary">创建版本</button></div>
+      <div id="rule-errors" class="errors hidden"></div>
+    </div>
+  </section>
+
+  <!-- 审计 -->
+  <section id="tab-audit" class="panel">
+    <div class="card">
+      <h2>审计记录</h2>
+      <div class="form-grid">
+        <label>动作<input id="a-action" placeholder="decision.create"></label>
+        <label>对象类型<input id="a-entity" placeholder="decision / rule_set"></label>
+        <label>对象引用<input id="a-ref"></label>
+      </div>
+      <div class="actions"><button id="btn-audit" class="primary">查询</button></div>
+      <table id="audit-table">
+        <thead><tr><th>时间</th><th>动作</th><th>对象</th><th>引用</th><th>操作人</th><th>详情</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

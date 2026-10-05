@@ -1,0 +1,24 @@
+services:
+  recycle-api:
+    build: .
+    image: recycle-contamination:1.0
+    container_name: recycle-contamination
+    ports:
+      - "8000:8000"
+    environment:
+      # 默认使用容器内持久化卷中的 SQLite；
+      # 如接入外部数据库可改为 e.g. postgresql+psycopg://user:pass@host/db
+      DATABASE_URL: sqlite:////data/recycle.db
+      APP_NAME: "回收分拣来料污染判定系统"
+      APP_ENV: "prod"
+    volumes:
+      - recycle-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz').status==200 else 1)"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  recycle-data:
